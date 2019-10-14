@@ -6,11 +6,14 @@ import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
 import torch.optim
+
 cudnn.benchmark = True
 
 from models import ResNet
+from models_fast import MobileNetSkipAdd
 from metrics import AverageMeter, Result
 from dataloaders.dense_to_sparse import UniformSampling, SimulatedStereo
+
 import criteria
 import utils
 
@@ -140,7 +143,12 @@ def main():
         elif args.arch == 'resnet18':
             model = ResNet(layers=18, decoder=args.decoder, output_size=train_loader.dataset.output_size,
                 in_channels=in_channels, pretrained=args.pretrained)
+        elif args.arch == 'mobilenet':
+            model = MobileNetSkipAdd(output_size=train_loader.dataset.output_size,
+                                     pretrained=args.pretrained)
+
         print("=> model created  " + str(train_loader.dataset.output_size))
+
         optimizer = torch.optim.SGD(model.parameters(), args.lr, \
             momentum=args.momentum, weight_decay=args.weight_decay)
 
@@ -333,7 +341,7 @@ def export(model, path, dataset):
     model.eval()
 
     # set the input size from the dataset
-    input_size = (1, 3, 480, 640) #(1, 3, 228, 304)	  # nyudepthv2
+    input_size = (1, 3, 224, 224) #(1, 3, 480, 640) #(1, 3, 228, 304)	  # nyudepthv2
 
     if dataset == "kitti":
          input_size = (1, 3, 228, 912)
