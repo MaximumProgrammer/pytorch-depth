@@ -154,7 +154,7 @@ def choose_decoder(decoder, in_channels):
 
 
 class ResNet(nn.Module):
-    def __init__(self, layers, decoder, output_size, in_channels=3, pretrained=True):
+    def __init__(self, layers, decoder, output_size, in_channels=3, pretrained=True, export=False):
 
         if layers not in [18, 34, 50, 101, 152]:
             raise RuntimeError('Only 18, 34, 50, 101, and 152 layer model are defined for ResNet. Got {}'.format(layers))
@@ -172,6 +172,7 @@ class ResNet(nn.Module):
             weights_init(self.bn1)
 
         self.output_size = output_size
+        self.export = export
 
         self.relu = pretrained_model._modules['relu']
         self.maxpool = pretrained_model._modules['maxpool']
@@ -220,6 +221,8 @@ class ResNet(nn.Module):
         # decoder
         x = self.decoder(x)
         x = self.conv3(x)
-        x = self.bilinear(x)
+
+        if not hasattr(self, 'export') or not self.export:
+             x = self.bilinear(x)  # comment out for --export to ONNX mode
 
         return x

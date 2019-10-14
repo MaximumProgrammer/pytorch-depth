@@ -95,6 +95,23 @@ def main():
         validate(val_loader, model, checkpoint['epoch'], write_to_file=False)
         return
 
+    # export to ONNX
+    elif args.export:
+        assert os.path.isfile(args.export), \
+        "=> no best model found at '{}'".format(args.export)
+        print("=> loading best model '{}'".format(args.export))
+        checkpoint = torch.load(args.export)
+        output_directory = os.path.dirname(args.export)
+        output_filename = args.export + '.onnx'
+        args = checkpoint['args']
+        start_epoch = checkpoint['epoch'] + 1
+        best_result = checkpoint['best_result']
+        model = checkpoint['model']
+        model.export = True
+        print("=> loaded best model (epoch {})".format(checkpoint['epoch']))
+        export(model, output_filename, args.data)
+        return
+
     # optionally resume from a checkpoint
     elif args.resume:
         chkpt_path = args.resume
@@ -123,7 +140,7 @@ def main():
         elif args.arch == 'resnet18':
             model = ResNet(layers=18, decoder=args.decoder, output_size=train_loader.dataset.output_size,
                 in_channels=in_channels, pretrained=args.pretrained)
-        print("=> model created.")
+        print("=> model created  " + str(train_loader.dataset.output_size))
         optimizer = torch.optim.SGD(model.parameters(), args.lr, \
             momentum=args.momentum, weight_decay=args.weight_decay)
 
@@ -199,6 +216,9 @@ def train(train_loader, model, criterion, optimizer, epoch):
         torch.cuda.synchronize()
         gpu_time = time.time() - end
 
+        #print('input size:  ' + str(input.size()))
+        #print('output size: ' + str(pred.size()))
+
         # measure accuracy and record loss
         result = Result()
         result.evaluate(pred.data, target.data)
@@ -241,6 +261,9 @@ def validate(val_loader, model, epoch, write_to_file=True):
             pred = model(input)
         torch.cuda.synchronize()
         gpu_time = time.time() - end
+
+        #print('input size:  ' + str(input.size()))
+        #print('output size: ' + str(pred.size()))
 
         # measure accuracy and record loss
         result = Result()
@@ -302,6 +325,31 @@ def validate(val_loader, model, epoch, write_to_file=True):
                 'mae': avg.mae, 'delta1': avg.delta1, 'delta2': avg.delta2, 'delta3': avg.delta3,
                 'data_time': avg.data_time, 'gpu_time': avg.gpu_time})
     return avg, img_merge
+
+
+# export model to ONNX
+def export(model, path, dataset):
+    print('=> exporting ONNX model to: ' + path)
+    model.eval()
+
+    # set the input size from the dataset
+    input_size = (1, 3, 480, 640) #(1, 3, 228, 304)	  # nyudepthv2
+
+    if dataset == "kitti":
+         input_size = (1, 3, 228, 912)
+
+    input = torch.ones(input_size).cuda()
+    print('=> input resolution:  ' + str(input_size))
+
+    # set the input/output layer names
+    input_names = [ "input_0" ]
+    output_names = [ "output_0" ]
+
+    print(model)
+
+    # export the model
+    torch.onnx.export(model, input, path, verbose=True, input_names=input_names, output_names=output_names)
+    print('=> ONNX model exported to: ' + path)
 
 if __name__ == '__main__':
     main()

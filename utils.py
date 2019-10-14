@@ -56,6 +56,7 @@ def parse_command():
                         help='evaluate model on validation set')
     parser.add_argument('--no-pretrain', dest='pretrained', action='store_false',
                         help='not to use ImageNet pre-trained weights')
+    parser.add_argument('--export', default='', type=str, help='path to pre-trained model to load to export to ONNX')
     parser.set_defaults(pretrained=True)
     args = parser.parse_args()
     if args.modality == 'rgb' and args.num_samples != 0:
@@ -108,6 +109,9 @@ def merge_into_row(input, depth_target, depth_pred):
 
     d_min = min(np.min(depth_target_cpu), np.min(depth_pred_cpu))
     d_max = max(np.max(depth_target_cpu), np.max(depth_pred_cpu))
+
+    print('d_min {:f}  d_max {:f}'.format(d_min, d_max))
+
     depth_target_col = colored_depthmap(depth_target_cpu, d_min, d_max)
     depth_pred_col = colored_depthmap(depth_pred_cpu, d_min, d_max)
     img_merge = np.hstack([rgb, depth_target_col, depth_pred_col])
