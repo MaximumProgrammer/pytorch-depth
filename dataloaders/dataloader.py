@@ -104,10 +104,15 @@ class MyDataloader(data.Dataset):
 
     def __getitem__(self, index):
         rgb, depth = self.__getraw__(index)
+        
+        #print('{:04d}  min={:f}  max={:f}  shape='.format(index, np.amin(depth), np.amax(depth)) + str(depth.shape))
+        
         if self.transform is not None:
             rgb_np, depth_np = self.transform(rgb, depth)
         else:
             raise(RuntimeError("transform not defined"))
+
+        #print('{:04d}  min={:f}  max={:f}  shape='.format(index, np.amin(depth_np), np.amax(depth_np)) + str(depth_np.shape))
 
         # color normalization
         # rgb_tensor = normalize_rgb(rgb_tensor)
@@ -124,7 +129,9 @@ class MyDataloader(data.Dataset):
         while input_tensor.dim() < 3:
             input_tensor = input_tensor.unsqueeze(0)
         depth_tensor = to_tensor(depth_np)
+        #print('{:04d} '.format(index) + str(depth_tensor.shape))
         depth_tensor = depth_tensor.unsqueeze(0)
+        #print('{:04d} '.format(index) + str(depth_tensor.shape))
 
         return input_tensor, depth_tensor
 
