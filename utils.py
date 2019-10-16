@@ -10,7 +10,7 @@ cmap = plt.cm.viridis
 def parse_command():
     model_names = ['resnet18', 'resnet50', 'mobilenet']
     loss_names = ['l1', 'l2']
-    data_names = ['nyudepthv2', 'kitti']
+    data_names = ['nyudepthv2', 'kitti', 'zed']
     from dataloaders.dense_to_sparse import UniformSampling, SimulatedStereo
     sparsifier_names = [x.name for x in [UniformSampling, SimulatedStereo]]
     from models import Decoder
@@ -110,7 +110,7 @@ def merge_into_row(input, depth_target, depth_pred):
     d_min = min(np.min(depth_target_cpu), np.min(depth_pred_cpu))
     d_max = max(np.max(depth_target_cpu), np.max(depth_pred_cpu))
 
-    print('d_min {:f}  d_max {:f}'.format(d_min, d_max))
+    print('depth_min {:f}  depth_max {:f}'.format(d_min, d_max))
 
     depth_target_col = colored_depthmap(depth_target_cpu, d_min, d_max)
     depth_pred_col = colored_depthmap(depth_pred_cpu, d_min, d_max)

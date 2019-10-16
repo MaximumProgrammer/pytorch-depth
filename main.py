@@ -58,9 +58,16 @@ def create_data_loaders(args):
         val_dataset = KITTIDataset(valdir, type='val',
             modality=args.modality, sparsifier=sparsifier)
 
+    elif args.data == 'zed':
+        from dataloaders.zed_dataloader import ZEDDataset
+        if not args.evaluate:
+            train_dataset = ZEDDataset(traindir, type='train')
+
+        val_dataset = ZEDDataset(valdir, type='val')
+
     else:
         raise RuntimeError('Dataset not found.' +
-                           'The dataset must be either of nyudepthv2 or kitti.')
+                           'The dataset must be either of nyudepthv2, kitti, or zed.')
 
     # set batch size to be 1 for validation
     val_loader = torch.utils.data.DataLoader(val_dataset,
