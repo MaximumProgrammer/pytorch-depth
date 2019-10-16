@@ -23,13 +23,13 @@ The original Torch implementation of the paper can be found [here](https://githu
 0. [Citation](#citation)
 
 ## Requirements
-This code was tested with Python 3 and PyTorch 0.4.0.
+This code was tested with Python 3.6 and PyTorch 1.2.0
 - Install [PyTorch](http://pytorch.org/) on a machine with CUDA GPU.
 - Install the [HDF5](https://en.wikipedia.org/wiki/Hierarchical_Data_Format) and other dependencies (files in our pre-processed datasets are in HDF5 formats).
 	```bash
 	sudo apt-get update
 	sudo apt-get install -y libhdf5-serial-dev hdf5-tools
-	pip3 install h5py matplotlib imageio scikit-image opencv-python
+	pip3 install h5py matplotlib imageio scipy==1.2.2 scikit-image==0.15.0 opencv-python
 	```
 - Download the preprocessed [NYU Depth V2](http://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html) and/or [KITTI Odometry](http://www.cvlibs.net/datasets/kitti/eval_odometry.php) dataset in HDF5 formats, and place them under the `data` folder. The downloading process might take an hour or so. The NYU dataset requires 32G of storage space, and KITTI requires 81G.
 	```bash
