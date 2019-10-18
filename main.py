@@ -58,12 +58,27 @@ def create_data_loaders(args):
         val_dataset = KITTIDataset(valdir, type='val',
             modality=args.modality, sparsifier=sparsifier)
 
+    elif args.data == 'deepscene':
+        from dataloaders.deepscene_dataloader import DeepSceneDataset
+        if not args.evaluate:
+            train_dataset = DeepSceneDataset(traindir, type='train')
+
+        val_dataset = DeepSceneDataset(valdir, type='val')
+
+    elif args.data == 'sun':
+        from dataloaders.sun_dataloader import SunRGBDDataset
+        if not args.evaluate:
+            train_dataset = SunRGBDDataset(traindir, type='train')
+
+        val_dataset = SunRGBDDataset(valdir, type='val')
+
     elif args.data == 'zed':
         from dataloaders.zed_dataloader import ZEDDataset
         if not args.evaluate:
             train_dataset = ZEDDataset(traindir, type='train')
 
         val_dataset = ZEDDataset(valdir, type='val')
+
 
     else:
         raise RuntimeError('Dataset not found.' +
@@ -138,6 +153,18 @@ def main():
         print("=> loaded checkpoint (epoch {})".format(checkpoint['epoch']))
         train_loader, val_loader = create_data_loaders(args)
         args.resume = True
+
+    # transfer learning from a checkpoint
+    elif args.checkpoint:
+        chkpt_path = args.checkpoint
+        assert os.path.isfile(chkpt_path), \
+            "=> no checkpoint found at '{}'".format(chkpt_path)
+        print("=> loading checkpoint '{}'".format(chkpt_path))
+        checkpoint = torch.load(chkpt_path)
+        model = checkpoint['model']
+        optimizer = checkpoint['optimizer']
+        print("=> loaded checkpoint (epoch {})".format(checkpoint['epoch']))
+        train_loader, val_loader = create_data_loaders(args)
 
     # create new model
     else:
@@ -287,7 +314,7 @@ def validate(val_loader, model, epoch, write_to_file=True):
         end = time.time()
 
         # save 8 images for visualization
-        skip = 50
+        skip = 10 if args.data == 'deepscene' else 50
         if args.modality == 'd':
             img_merge = None
         else:
@@ -348,7 +375,7 @@ def export(model, path, dataset):
     model.eval()
 
     # set the input size from the dataset
-    input_size = (1, 3, 224, 224) #(1, 3, 480, 640) #(1, 3, 228, 304)	  # nyudepthv2
+    input_size = (1, 3, 448, 448) #(1, 3, 224, 224) #(1, 3, 480, 640) #(1, 3, 228, 304)	  # nyudepthv2
 
     if dataset == "kitti":
          input_size = (1, 3, 228, 912)

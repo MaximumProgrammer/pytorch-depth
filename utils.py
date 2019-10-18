@@ -10,7 +10,7 @@ cmap = plt.cm.viridis
 def parse_command():
     model_names = ['resnet18', 'resnet50', 'mobilenet']
     loss_names = ['l1', 'l2']
-    data_names = ['nyudepthv2', 'kitti', 'zed']
+    data_names = ['nyudepthv2', 'kitti', 'deepscene', 'sun', 'zed']
     from dataloaders.dense_to_sparse import UniformSampling, SimulatedStereo
     sparsifier_names = [x.name for x in [UniformSampling, SimulatedStereo]]
     from models import Decoder
@@ -52,6 +52,8 @@ def parse_command():
                         metavar='N', help='print frequency (default: 10)')
     parser.add_argument('--resume', default='', type=str, metavar='PATH',
                         help='path to latest checkpoint (default: none)')
+    parser.add_argument('--checkpoint', default='', type=str, metavar='PATH',
+                        help='path to pretrained checkpoint to begin training from')
     parser.add_argument('-e', '--evaluate', dest='evaluate', type=str, default='',
                         help='evaluate model on validation set')
     parser.add_argument('--no-pretrain', dest='pretrained', action='store_false',
