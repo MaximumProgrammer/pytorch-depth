@@ -28,7 +28,7 @@ class ZEDDataset(Dataset):
 
 		if imread(self.depth_files[0]).dtype.type is np.uint16: 
 			self.depth_16 = True
-			self.depth_16_max = 20000
+			self.depth_16_max = 5000 #20000
 
 		print('found {:d} image pairs with {:s}-bit depth under {:s}'.format(len(self.rgb_files), "16" if self.depth_16 else "8", root))
 
@@ -125,7 +125,9 @@ class ZEDDataset(Dataset):
 			depth[depth == 65535] = 0	# map 'invalid' to 0
 			return depth
 		else:		
-			return imread(self.depth_files[index], as_gray=False, pilmode="L")
+			depth = imread(self.depth_files[index], as_gray=False, pilmode="L")
+			#depth[depth == 0] = 255       # map 0 -> 255
+			return depth
 
 	def __len__(self):
 		return len(self.rgb_files)
